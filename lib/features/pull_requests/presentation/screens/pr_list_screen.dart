@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../domain/models/pull_request.dart';
 import '../providers/pr_provider.dart';
 import '../widgets/pr_card.dart';
 
@@ -14,19 +15,34 @@ class PrListScreen extends ConsumerStatefulWidget {
   ConsumerState<PrListScreen> createState() => _PrListScreenState();
 }
 
-class _PrListScreenState extends ConsumerState<PrListScreen> {
+class _PrListScreenState extends ConsumerState<PrListScreen>
+    with SingleTickerProviderStateMixin {
   final _searchController = TextEditingController();
+  late TabController _tabController;
   bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   Future<void> _refresh() async {
     setState(() => _isRefreshing = true);
-    await ref.read(prListProvider.notifier).refresh();
+
+    // Refresh both lists
+    await Future.wait([
+      ref.read(prListProvider.notifier).refresh(),
+      ref.read(createdPrListProvider.notifier).refresh(),
+    ]);
+
     setState(() => _isRefreshing = false);
   }
 
@@ -59,7 +75,6 @@ class _PrListScreenState extends ConsumerState<PrListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prList = ref.watch(filteredPrListProvider);
     final username = ref.watch(currentUsernameProvider);
 
     return Scaffold(
@@ -76,27 +91,61 @@ class _PrListScreenState extends ConsumerState<PrListScreen> {
             ),
             child: Row(
               children: [
-                // App title
-                Row(
-                  children: [
-                    Icon(
-                      Icons.inbox_rounded,
-                      color: AppTheme.primary,
-                      size: 24,
+                // App icon
+                Icon(
+                  Icons.inbox_rounded,
+                  color: AppTheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+
+                // Tabs
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.card,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    indicator: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Review Requests',
-                      style: Theme.of(context).textTheme.headlineMedium,
+                    labelColor: AppTheme.primary,
+                    unselectedLabelColor: AppTheme.textSecondary,
+                    labelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    tabs: const [
+                      Tab(
+                        height: 32,
+                        text: 'Review Requests',
+                      ),
+                      Tab(
+                        height: 32,
+                        text: 'Created',
+                      ),
+                    ],
+                  ),
                 ),
 
                 const Spacer(),
 
                 // Search field
                 SizedBox(
-                  width: 250,
+                  width: 220,
                   height: 36,
                   child: TextField(
                     controller: _searchController,
@@ -207,26 +256,24 @@ class _PrListScreenState extends ConsumerState<PrListScreen> {
             ),
           ),
 
-          // PR List
+          // Tab content
           Expanded(
-            child: prList.when(
-              data: (prs) {
-                if (prs.isEmpty) {
-                  return _buildEmptyState();
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                  itemCount: prs.length,
-                  itemBuilder: (context, index) {
-                    return PrCard(
-                      pr: prs[index],
-                      index: index,
-                    );
-                  },
-                );
-              },
-              loading: () => _buildLoadingState(),
-              error: (error, stack) => _buildErrorState(error),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Review Requests tab
+                _buildPrList(
+                  ref.watch(filteredPrListProvider),
+                  emptyMessage: 'No pull requests waiting for your review',
+                  emptyIcon: Icons.check_circle_outline_rounded,
+                ),
+                // Created PRs tab
+                _buildPrList(
+                  ref.watch(filteredCreatedPrListProvider),
+                  emptyMessage: 'You have no open pull requests',
+                  emptyIcon: Icons.create_rounded,
+                ),
+              ],
             ),
           ),
         ],
@@ -234,7 +281,33 @@ class _PrListScreenState extends ConsumerState<PrListScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildPrList(
+    AsyncValue<List<PullRequestModel>> prList, {
+    required String emptyMessage,
+    required IconData emptyIcon,
+  }) {
+    return prList.when(
+      data: (prs) {
+        if (prs.isEmpty) {
+          return _buildEmptyState(emptyMessage, emptyIcon);
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          itemCount: prs.length,
+          itemBuilder: (context, index) {
+            return PrCard(
+              pr: prs[index],
+              index: index,
+            );
+          },
+        );
+      },
+      loading: () => _buildLoadingState(),
+      error: (error, stack) => _buildErrorState(error),
+    );
+  }
+
+  Widget _buildEmptyState(String message, IconData icon) {
     final searchQuery = ref.watch(prSearchQueryProvider);
     final isSearching = searchQuery.isNotEmpty;
 
@@ -243,7 +316,7 @@ class _PrListScreenState extends ConsumerState<PrListScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            isSearching ? Icons.search_off_rounded : Icons.check_circle_outline_rounded,
+            isSearching ? Icons.search_off_rounded : icon,
             size: 64,
             color: AppTheme.textMuted,
           ),
@@ -256,9 +329,7 @@ class _PrListScreenState extends ConsumerState<PrListScreen> {
           ),
           const SizedBox(height: AppConstants.smallPadding),
           Text(
-            isSearching
-                ? 'Try a different search term'
-                : 'No pull requests waiting for your review',
+            isSearching ? 'Try a different search term' : message,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           if (isSearching) ...[

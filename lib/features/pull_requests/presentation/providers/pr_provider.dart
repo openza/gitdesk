@@ -118,3 +118,77 @@ final filteredPrListProvider = Provider<AsyncValue<List<PullRequestModel>>>((ref
 
 // Auto-refresh settings provider
 final autoRefreshEnabledProvider = StateProvider<bool>((ref) => true);
+
+// ============================================================================
+// Created PRs Provider
+// ============================================================================
+
+final createdPrListProvider =
+    AsyncNotifierProvider<CreatedPrListNotifier, List<PullRequestModel>>(() {
+  return CreatedPrListNotifier();
+});
+
+class CreatedPrListNotifier extends AsyncNotifier<List<PullRequestModel>> {
+  Timer? _autoRefreshTimer;
+
+  @override
+  Future<List<PullRequestModel>> build() async {
+    ref.onDispose(() {
+      _autoRefreshTimer?.cancel();
+    });
+
+    final prs = await _fetchPullRequests();
+    _startAutoRefresh();
+    return prs;
+  }
+
+  Future<List<PullRequestModel>> _fetchPullRequests() async {
+    final prRepo = ref.read(prRepositoryProvider);
+    return await prRepo.getCreatedPrs();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _autoRefresh(),
+    );
+  }
+
+  Future<void> _autoRefresh() async {
+    try {
+      final newPrs = await _fetchPullRequests();
+      state = AsyncValue.data(newPrs);
+    } catch (e) {
+      // Silent fail for background refresh
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncValue.loading();
+    try {
+      final prs = await _fetchPullRequests();
+      state = AsyncValue.data(prs);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+// Filtered Created PR list based on search query
+final filteredCreatedPrListProvider =
+    Provider<AsyncValue<List<PullRequestModel>>>((ref) {
+  final prList = ref.watch(createdPrListProvider);
+  final searchQuery = ref.watch(prSearchQueryProvider).toLowerCase();
+
+  return prList.whenData((prs) {
+    if (searchQuery.isEmpty) return prs;
+
+    return prs.where((pr) {
+      return pr.title.toLowerCase().contains(searchQuery) ||
+          pr.repository.fullName.toLowerCase().contains(searchQuery) ||
+          pr.author.login.toLowerCase().contains(searchQuery) ||
+          pr.labels.any((l) => l.name.toLowerCase().contains(searchQuery));
+    }).toList();
+  });
+});
