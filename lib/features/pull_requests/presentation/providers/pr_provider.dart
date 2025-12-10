@@ -39,7 +39,7 @@ class PrListNotifier extends AsyncNotifier<List<PullRequestModel>> {
   void _startAutoRefresh() {
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(
-      const Duration(minutes: 2),
+      const Duration(minutes: 5),
       (_) => _autoRefreshWithNotification(),
     );
   }
