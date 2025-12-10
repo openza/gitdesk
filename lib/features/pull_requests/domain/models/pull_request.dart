@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+
+class PullRequestModel {
+  final int id;
+  final int number;
+  final String title;
+  final String body;
+  final String state;
+  final String htmlUrl;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool draft;
+  final UserModel author;
+  final RepositoryModel repository;
+  final List<LabelModel> labels;
+
+  PullRequestModel({
+    required this.id,
+    required this.number,
+    required this.title,
+    required this.body,
+    required this.state,
+    required this.htmlUrl,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.draft,
+    required this.author,
+    required this.repository,
+    required this.labels,
+  });
+
+  factory PullRequestModel.fromGitHubIssue(Map<String, dynamic> json) {
+    final repositoryUrl = json['repository_url'] as String? ?? '';
+    final repoParts = repositoryUrl.split('/');
+    final repoName = repoParts.length >= 2
+        ? '${repoParts[repoParts.length - 2]}/${repoParts.last}'
+        : '';
+
+    return PullRequestModel(
+      id: json['id'] as int,
+      number: json['number'] as int,
+      title: json['title'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      state: json['state'] as String? ?? 'open',
+      htmlUrl: json['html_url'] as String? ?? '',
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+      draft: json['draft'] as bool? ?? false,
+      author: UserModel.fromJson(json['user'] as Map<String, dynamic>? ?? {}),
+      repository: RepositoryModel(
+        fullName: repoName,
+        htmlUrl: json['repository_url'] as String? ?? '',
+      ),
+      labels: (json['labels'] as List<dynamic>? ?? [])
+          .map((l) => LabelModel.fromJson(l as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class UserModel {
+  final int id;
+  final String login;
+  final String avatarUrl;
+  final String htmlUrl;
+
+  UserModel({
+    required this.id,
+    required this.login,
+    required this.avatarUrl,
+    required this.htmlUrl,
+  });
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as int? ?? 0,
+      login: json['login'] as String? ?? '',
+      avatarUrl: json['avatar_url'] as String? ?? '',
+      htmlUrl: json['html_url'] as String? ?? '',
+    );
+  }
+}
+
+class RepositoryModel {
+  final String fullName;
+  final String htmlUrl;
+
+  RepositoryModel({
+    required this.fullName,
+    required this.htmlUrl,
+  });
+
+  String get owner => fullName.split('/').firstOrNull ?? '';
+  String get name => fullName.split('/').lastOrNull ?? '';
+}
+
+class LabelModel {
+  final int id;
+  final String name;
+  final String color;
+  final String? description;
+
+  LabelModel({
+    required this.id,
+    required this.name,
+    required this.color,
+    this.description,
+  });
+
+  factory LabelModel.fromJson(Map<String, dynamic> json) {
+    return LabelModel(
+      id: json['id'] as int? ?? 0,
+      name: json['name'] as String? ?? '',
+      color: json['color'] as String? ?? '000000',
+      description: json['description'] as String?,
+    );
+  }
+
+  Color get backgroundColor {
+    final colorInt = int.tryParse(color, radix: 16) ?? 0;
+    return Color(0xFF000000 | colorInt);
+  }
+
+  Color get textColor {
+    final bg = backgroundColor;
+    // Calculate luminance to determine text color
+    final r = (bg.r * 255.0).round().clamp(0, 255);
+    final g = (bg.g * 255.0).round().clamp(0, 255);
+    final b = (bg.b * 255.0).round().clamp(0, 255);
+    final luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? Colors.black : Colors.white;
+  }
+}
