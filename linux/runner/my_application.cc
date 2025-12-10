@@ -22,6 +22,17 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+
+  // Set up default window icon for the application
+  g_autoptr(GError) error = nullptr;
+  g_autofree gchar* exe_path = g_file_read_link("/proc/self/exe", nullptr);
+  g_autofree gchar* dir_path = g_path_get_dirname(exe_path);
+  g_autofree gchar* icon_path = g_build_filename(dir_path, "data", "app_icon.png", nullptr);
+
+  if (!gtk_window_set_default_icon_from_file(icon_path, &error)) {
+     g_warning("Failed to set default icon: %s", error->message);
+  }
+
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
