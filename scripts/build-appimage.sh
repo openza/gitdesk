@@ -15,15 +15,11 @@ echo "Building AppImage for $APP_NAME v$VERSION..."
 APPDIR="$APP_NAME.AppDir"
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
-mkdir -p "$APPDIR/usr/lib"
 mkdir -p "$APPDIR/usr/share/applications"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 
-# Copy Flutter build output
-cp -r build/linux/x64/release/bundle/* "$APPDIR/usr/"
-
-# Move binary to bin
-mv "$APPDIR/usr/$BINARY_NAME" "$APPDIR/usr/bin/"
+# Copy Flutter build output - keep bundle structure intact in bin/
+cp -r build/linux/x64/release/bundle/* "$APPDIR/usr/bin/"
 
 # Copy desktop file
 cp linux/gitdesk.desktop "$APPDIR/usr/share/applications/$APP_ID.desktop"
@@ -39,7 +35,8 @@ cat > "$APPDIR/AppRun" << 'EOF'
 SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
 export PATH="${HERE}/usr/bin:${PATH}"
-export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${HERE}/usr/bin/lib:${LD_LIBRARY_PATH}"
+cd "${HERE}/usr/bin"
 exec "${HERE}/usr/bin/gitdesk" "$@"
 EOF
 chmod +x "$APPDIR/AppRun"
