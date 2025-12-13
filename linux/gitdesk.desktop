@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=GitDesk
+Comment=GitHub PR Review Inbox
+Exec=gitdesk
+Icon=gitdesk
+Type=Application
+Categories=Development;
+Terminal=false
+StartupWMClass=gitdesk
