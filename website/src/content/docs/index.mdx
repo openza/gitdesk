@@ -1,9 +1,9 @@
 ---
-title: Openza GitDesk Documentation
-description: Documentation for Openza GitDesk - GitHub PR Review Inbox for Linux
+title: Openza GitDesk
+description: GitHub PR Review Inbox for Linux - Never miss a code review again
 template: splash
 hero:
-  tagline: GitHub PR Review Inbox for your Linux desktop
+  tagline: Your GitHub PR inbox, beautifully organized on Linux
   image:
     file: ../../assets/logo.svg
   actions:
@@ -16,27 +16,50 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+
+<div class="feature-highlight">
+  <strong>New in v0.2.0:</strong> GitHub OAuth sign-in and organization filtering are here!
+  Sign in with one click — no more managing tokens manually.
+</div>
+
+## Why GitDesk?
+
+Stop context-switching to GitHub. GitDesk brings your PR review queue to your desktop with instant notifications, so you never miss a review request again.
 
 ## Features
 
 <CardGrid stagger>
-  <Card title="PR Review Inbox" icon="approve-check-circle">
-    Track all pull requests waiting for your review in one unified view.
+  <Card title="Unified PR Inbox" icon="approve-check-circle">
+    All your review requests, created PRs, and recently reviewed PRs in one clean interface. No more hunting through GitHub notifications.
   </Card>
-  <Card title="GitHub OAuth" icon="github">
-    Sign in securely with GitHub - no token management needed.
+  <Card title="One-Click GitHub OAuth" icon="github">
+    Sign in securely with GitHub's device flow. No tokens to create, copy, or manage. Just click and authorize.
   </Card>
   <Card title="Organization Filter" icon="setting">
-    Filter PRs by organization to focus on what matters.
+    Working across multiple orgs? Filter your inbox to focus on a single organization at a time. Your selection persists across sessions.
   </Card>
   <Card title="Desktop Notifications" icon="bell">
-    Get notified when you're requested to review a PR.
+    Native Linux notifications alert you the moment you're requested to review a PR. Never leave your teammates waiting.
   </Card>
-  <Card title="Fast & Native" icon="rocket">
-    Built with Flutter for smooth performance on Linux.
+  <Card title="Lightning Fast" icon="rocket">
+    Built with Flutter for native Linux performance. Cached data means instant loads, with smart background refresh every 5 minutes.
   </Card>
   <Card title="Open Source" icon="open-book">
-    MIT licensed. Fork it, improve it, share it.
+    MIT licensed and built in the open. Check out the code, report issues, or contribute on GitHub.
   </Card>
 </CardGrid>
+
+## Quick Start
+
+```bash
+# Download the Flatpak from GitHub Releases
+flatpak install GitDesk-*.flatpak
+
+# Launch and sign in with GitHub
+flatpak run com.openza.gitdesk
+```
+
+<Aside type="tip">
+  Prefer AppImage? Both formats are available on the [releases page](https://github.com/openza/gitdesk/releases).
+</Aside>

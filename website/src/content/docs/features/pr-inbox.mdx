@@ -3,70 +3,94 @@ title: PR Inbox
 description: Understanding the GitDesk PR inbox interface
 ---
 
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+
 # PR Inbox
 
-The PR Inbox is the main interface of GitDesk, showing all your pull request activity in one place.
+The PR Inbox is your command center — all pull request activity organized in one clean interface. No more hunting through GitHub notifications.
+
+<div class="feature-highlight">
+  <strong>⚡ Real-time Updates</strong> — Background refresh every 5 minutes keeps your inbox current without manual intervention.
+</div>
 
 ## Inbox Tabs
 
-GitDesk organizes your PRs into two main tabs:
+GitDesk organizes your PRs into two focused views:
+
+<CardGrid>
+  <Card title="Review Requests" icon="approve-check-circle">
+    PRs waiting for your review, plus PRs you've recently reviewed. Your review queue at a glance.
+  </Card>
+  <Card title="Created" icon="pencil">
+    PRs you've authored. Track review status and merge readiness for your own work.
+  </Card>
+</CardGrid>
 
 ### Review Requests Tab
 
 This tab shows PRs that need your attention:
 
-**Pending Reviews**
-- PRs where you've been requested as a reviewer
-- Shows PR title, repository, and author
-- Displays time since last update
+<Aside type="note" title="Pending Reviews">
+PRs where you've been requested as a reviewer. Each card shows the PR title, repository, author, and time since last update.
+</Aside>
 
-**Recently Reviewed**
-- PRs you've recently reviewed
-- Shows your review status (Approved, Changes Requested, Commented, Pending)
-- Helps you track PRs you're involved with
+<Aside type="tip" title="Recently Reviewed">
+PRs you've already reviewed. Shows your review status — Approved ✓, Changes Requested ✗, Commented 💬, or Pending ⏳.
+</Aside>
 
 ### Created Tab
 
-This tab shows PRs you've authored:
+Your authored PRs organized by status:
 
-**Open Pull Requests**
-- Your currently open PRs
-- Track review status from your team
-- See merge readiness at a glance
+<Aside type="note" title="Open Pull Requests">
+Your currently open PRs with review status from your team. See merge readiness at a glance.
+</Aside>
 
-**Recently Created**
-- Your most recently created PRs
-- Quick access to PRs you've authored
+<Aside type="tip" title="Recently Created">
+Quick access to your most recently created PRs, regardless of current status.
+</Aside>
 
-## PR Card Information
+## PR Card Anatomy
 
-Each PR card displays:
+Each PR card displays essential information at a glance:
 
-| Field | Description |
-|-------|-------------|
-| **Title** | The PR title |
-| **Repository** | Owner/repo format |
-| **Author** | PR author with avatar |
-| **Labels** | PR labels with colors |
-| **Base/Head** | Branch information |
-| **Updated** | Time since last update |
+| Element | Description |
+|---------|-------------|
+| **Title** | The pull request title — click to open on GitHub |
+| **Repository** | Full `owner/repo` format with link |
+| **Author** | PR author with GitHub avatar |
+| **Labels** | Color-coded PR labels |
+| **Branches** | Base ← Head branch information |
+| **Updated** | Relative time since last activity |
 
 ## Organization Filter
 
-Filter PRs by organization using the dropdown in the header:
+<div class="feature-highlight">
+  <strong>🏢 Multi-org Support</strong> — Working across multiple organizations? Filter your inbox to focus on one org at a time.
+</div>
 
-- **All Organizations** - Show PRs from all your organizations
-- **Specific Org** - Show only PRs from the selected organization
+Use the dropdown in the header to filter:
 
-The filter applies to all tabs and is remembered across sessions.
+- **All Organizations** — Show PRs from all your GitHub organizations
+- **Specific Org** — Focus on a single organization's PRs
 
-## Actions
+<Aside type="tip">
+Your filter selection persists across sessions — GitDesk remembers your preference.
+</Aside>
 
-- **Click** - Open the PR in your browser on GitHub
-- **Search** - Use the search bar to filter PRs by text
+## Quick Actions
 
-## Refresh Behavior
+| Action | How |
+|--------|-----|
+| **Open PR** | Click any PR card to open it on GitHub |
+| **Search** | Use the search bar to filter by title, repo, or author |
+| **Refresh** | Click the refresh button for immediate update |
+| **Theme** | Toggle dark/light mode in the header |
 
-- Auto-refresh every 5 minutes in the background
-- Manual refresh with the refresh button in the header
-- Theme toggle (dark/light mode) available in the header
+## Background Refresh
+
+GitDesk keeps your inbox current automatically:
+
+- **Auto-refresh** every 5 minutes while running
+- **Cached data** for instant loads on startup
+- **Manual refresh** available anytime via header button
