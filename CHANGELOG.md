@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Race condition in SelectedOrgNotifier async initialization causing duplicate API calls
 - OAuthService cancellation race condition when restarting device flow quickly
 - Flatpak: URL opening for OAuth device flow now works correctly
+- OAuth screen now displays correct app logo
 
 ## [0.1.0] - 2025-12-17
 

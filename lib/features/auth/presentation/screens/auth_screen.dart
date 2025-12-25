@@ -123,10 +123,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // App icon/logo
-                Icon(
-                  Icons.inbox_rounded,
-                  size: 64,
-                  color: colorScheme.primary,
+                Image.asset(
+                  'assets/icon/icon.png',
+                  width: 64,
+                  height: 64,
                 ),
                 const SizedBox(height: AppConstants.defaultPadding),
 
